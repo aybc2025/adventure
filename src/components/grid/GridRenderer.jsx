@@ -1,36 +1,23 @@
 import { CELL_COLORS } from '../../config/constants.js';
 
-/**
- * GridRenderer — displays a grid with hero + monster tokens.
- * Read-only (no edit). Used in RoomView during combat.
- *
- * Props:
- *  - grid: { cols, rows, cells: [{ x, y, type }] }
- *  - heroPosition: { x, y } | null
- *  - heroEmoji: string
- *  - monsters: [{ id, name, hp, position, emoji }]
- *  - onMonsterClick?: (monsterId) => void
- *  - selectedMonsterId?: string
- */
 export default function GridRenderer({
   grid,
   heroPosition = null,
   heroEmoji = '⚔️',
   monsters = [],
   onMonsterClick = null,
-  selectedMonsterId = null
+  selectedMonsterId = null,
+  onCellClick = null,       // (x, y) => void — movement
+  reachableCells = null,    // Set<"x,y"> — moveable highlights
+  inRangeMonsterIds = null  // Set<monsterId> — attackable highlights
 }) {
   if (!grid) return null;
   const cols = grid.cols || 8;
   const rows = grid.rows || 6;
 
-  // Build a map of cell type by "x,y"
   const cellMap = {};
-  (grid.cells || []).forEach((c) => {
-    cellMap[`${c.x},${c.y}`] = c.type;
-  });
+  (grid.cells || []).forEach((c) => { cellMap[`${c.x},${c.y}`] = c.type; });
 
-  // Build a map of monsters by "x,y"
   const monsterMap = {};
   monsters.forEach((m) => {
     if (m.position && m.hp > 0) {
@@ -52,30 +39,50 @@ export default function GridRenderer({
             const cellMonsters = monsterMap[`${x},${y}`] || [];
             const isHeroHere = heroPosition?.x === x && heroPosition?.y === y;
             const bg = CELL_COLORS[cellType] || CELL_COLORS.floor;
+            const key = `${x},${y}`;
+            const canMoveTo =
+              reachableCells?.has(key) &&
+              cellMonsters.length === 0 &&
+              !isHeroHere &&
+              onCellClick;
 
             return (
               <div
                 key={`${x}-${y}`}
-                className="aspect-square flex items-center justify-center text-lg sm:text-xl relative"
+                className={`aspect-square flex items-center justify-center text-lg sm:text-xl relative
+                  ${canMoveTo ? 'cursor-pointer' : ''}`}
                 style={{ background: bg, minWidth: '32px', minHeight: '32px' }}
+                onClick={canMoveTo ? () => onCellClick(x, y) : undefined}
               >
+                {/* Movement range highlight */}
+                {canMoveTo && (
+                  <div className="absolute inset-0 bg-gold/25 pointer-events-none" />
+                )}
+
                 {cellType === 'door' && <span className="absolute opacity-40 no-rtl">🚪</span>}
                 {cellType === 'trap' && <span className="absolute opacity-40 no-rtl">⚠️</span>}
                 {cellType === 'treasure' && <span className="absolute opacity-50 no-rtl">💰</span>}
+
                 {isHeroHere && (
-                  <span className="relative z-10 no-rtl text-2xl drop-shadow-lg">
+                  <span className="relative z-10 no-rtl text-2xl drop-shadow-lg filter drop-shadow">
                     {heroEmoji}
                   </span>
                 )}
+
                 {cellMonsters.map((m) => {
                   const isSelected = m.id === selectedMonsterId;
+                  const isInRange = inRangeMonsterIds?.has(m.id);
                   return (
                     <button
                       key={m.id}
-                      onClick={() => onMonsterClick?.(m.id)}
+                      onClick={(e) => { e.stopPropagation(); onMonsterClick?.(m.id); }}
                       disabled={!onMonsterClick}
                       className={`relative z-20 no-rtl text-xl sm:text-2xl drop-shadow-lg transition-all ${
-                        isSelected ? 'scale-125 ring-2 ring-danger rounded-full' : ''
+                        isSelected
+                          ? 'scale-125 ring-2 ring-danger rounded-full'
+                          : isInRange
+                          ? 'ring-2 ring-gold rounded-full'
+                          : ''
                       } ${onMonsterClick ? 'hover:scale-110 cursor-pointer' : ''}`}
                       title={`${m.name} (HP: ${m.hp})`}
                     >

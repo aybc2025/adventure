@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase.js';
@@ -34,6 +34,9 @@ import InventoryBar from '../../components/combat/InventoryBar.jsx';
 import CombatLog from '../../components/combat/CombatLog.jsx';
 import DiceAnimation from '../../components/combat/DiceAnimation.jsx';
 
+const HERO_MOVE_RANGE = 4;
+const ATTACK_RANGE = 1; // Chebyshev distance (adjacent squares including diagonals)
+
 export default function RoomView() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
@@ -54,6 +57,8 @@ export default function RoomView() {
   const [busy, setBusy] = useState(false);
   const [readAloudOpen, setReadAloudOpen] = useState(true);
   const [transitioning, setTransitioning] = useState(false);
+  const [heroPosition, setHeroPosition] = useState(null);
+  const [movesLeft, setMovesLeft] = useState(HERO_MOVE_RANGE);
 
   // Find the current room object once data loads
   useEffect(() => {
@@ -61,6 +66,19 @@ export default function RoomView() {
     const room = rooms.find((r) => r.id === session.current_room_id);
     setCurrentRoom(room || null);
   }, [session, rooms]);
+
+  // Reset hero position + moves when entering a new room
+  useEffect(() => {
+    if (!currentRoom?.grid) return;
+    const rows = currentRoom.grid.rows || 6;
+    setHeroPosition({ x: 0, y: Math.floor(rows / 2) });
+    setMovesLeft(HERO_MOVE_RANGE);
+  }, [currentRoom?.id]);
+
+  // Restore move allowance at the start of each player turn
+  useEffect(() => {
+    if (combatState?.turn === 'player') setMovesLeft(HERO_MOVE_RANGE);
+  }, [combatState?.turn]);
 
   // Initialise combat state when room loads
   useEffect(() => {
@@ -227,6 +245,68 @@ export default function RoomView() {
     }
   }
 
+  // BFS — returns Map<"x,y", stepsNeeded> of reachable non-wall, non-monster cells
+  const reachableCellMap = useMemo(() => {
+    if (!combatState || combatState.turn !== 'player' || !heroPosition || !currentRoom?.grid || movesLeft <= 0) {
+      return new Map();
+    }
+    const grid = currentRoom.grid;
+    const cols = grid.cols || 8;
+    const rows = grid.rows || 6;
+    const blocked = new Set();
+    (grid.cells || []).forEach((c) => { if (c.type === 'wall') blocked.add(`${c.x},${c.y}`); });
+    combatState.monsters.forEach((m) => {
+      if (m.hp > 0 && m.position) blocked.add(`${m.position.x},${m.position.y}`);
+    });
+    const distMap = new Map();
+    const queue = [{ x: heroPosition.x, y: heroPosition.y, dist: 0 }];
+    const visited = new Set([`${heroPosition.x},${heroPosition.y}`]);
+    while (queue.length) {
+      const { x, y, dist } = queue.shift();
+      if (dist > 0) distMap.set(`${x},${y}`, dist);
+      if (dist >= movesLeft) continue;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nx = x + dx, ny = y + dy;
+        const key = `${nx},${ny}`;
+        if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
+        if (blocked.has(key) || visited.has(key)) continue;
+        visited.add(key);
+        queue.push({ x: nx, y: ny, dist: dist + 1 });
+      }
+    }
+    return distMap;
+  }, [combatState?.turn, heroPosition, movesLeft, currentRoom?.grid, combatState?.monsters]);
+
+  const reachableCells = useMemo(() => new Set(reachableCellMap.keys()), [reachableCellMap]);
+
+  // Monsters within melee range (Chebyshev distance ≤ 1) of the hero
+  const inRangeMonsterIds = useMemo(() => {
+    if (!heroPosition || !combatState) return new Set();
+    return new Set(
+      combatState.monsters
+        .filter((m) => m.hp > 0 && m.position &&
+          Math.max(Math.abs(heroPosition.x - m.position.x), Math.abs(heroPosition.y - m.position.y)) <= ATTACK_RANGE)
+        .map((m) => m.id)
+    );
+  }, [heroPosition, combatState?.monsters]);
+
+  const canAttackSelected = !!selectedMonster && inRangeMonsterIds.has(selectedMonster);
+
+  const handleCellClick = useCallback((x, y) => {
+    const key = `${x},${y}`;
+    const dist = reachableCellMap.get(key);
+    if (dist == null) return;
+    setHeroPosition({ x, y });
+    setMovesLeft((prev) => prev - dist);
+    setSelectedMonster(null);
+  }, [reachableCellMap]);
+
+  const handleEndTurn = useCallback(() => {
+    if (!combatState || combatState.turn !== 'player') return;
+    setCombatState((prev) => ({ ...prev, turn: 'monsters' }));
+    setSelectedMonster(null);
+  }, [combatState]);
+
   const handleAttack = useCallback(() => {
     if (busy || !combatState || !selectedMonster) return;
     if (combatState.turn !== 'player') return;
@@ -338,14 +418,25 @@ export default function RoomView() {
 
         {/* Grid */}
         {currentRoom.grid && (
-          <div className="flex justify-center animate-fade-in">
-            <GridRenderer
-              grid={currentRoom.grid}
-              monsters={combatState.monsters}
-              heroEmoji={hero.emoji || '⚔️'}
-              onMonsterClick={(id) => isPlayerTurn && setSelectedMonster(id)}
-              selectedMonsterId={selectedMonster}
-            />
+          <div className="animate-fade-in">
+            <div className="flex justify-center">
+              <GridRenderer
+                grid={currentRoom.grid}
+                heroPosition={heroPosition}
+                heroEmoji={hero.emoji || '⚔️'}
+                monsters={combatState.monsters}
+                onMonsterClick={(id) => isPlayerTurn && setSelectedMonster(id)}
+                selectedMonsterId={selectedMonster}
+                onCellClick={isPlayerTurn && movesLeft > 0 ? handleCellClick : null}
+                reachableCells={isPlayerTurn ? reachableCells : null}
+                inRangeMonsterIds={inRangeMonsterIds}
+              />
+            </div>
+            {isPlayerTurn && (
+              <p className="text-center text-muted text-xs mt-1">
+                {movesLeft > 0 ? `תזוזה: ${movesLeft} משבצות נותרו — לחץ על תא מוזהב לזוז` : 'לא נותרות תזוזות'}
+              </p>
+            )}
           </div>
         )}
 
@@ -383,11 +474,12 @@ export default function RoomView() {
         <CombatLog entries={combatState.log} />
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sticky bottom-2 z-20">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sticky bottom-2 z-20">
           <button
             onClick={handleAttack}
-            disabled={!isPlayerTurn || !selectedMonster || busy}
+            disabled={!isPlayerTurn || !canAttackSelected || busy}
             className="btn-gold"
+            title={selectedMonster && !canAttackSelected ? 'המפלצת מחוץ לטווח — התקרב תחילה' : ''}
           >
             ⚔️ תקוף
           </button>
@@ -402,9 +494,16 @@ export default function RoomView() {
           <button
             onClick={() => setSelectedMonster(null)}
             disabled={!selectedMonster}
-            className="btn-ghost col-span-2 sm:col-span-1"
+            className="btn-ghost"
           >
             בטל בחירה
+          </button>
+          <button
+            onClick={handleEndTurn}
+            disabled={!isPlayerTurn || busy}
+            className="btn-ghost"
+          >
+            סיים תור ←
           </button>
         </div>
 
