@@ -25,7 +25,7 @@ export default function ProtectedRoute({ variant = 'player' }) {
         <div className="card-fantasy max-w-md text-center">
           <h2 className="text-2xl text-danger mb-2">🚫 אין הרשאה</h2>
           <p className="text-text/80 mb-4">החשבון שלך אינו מורשה לגשת לממשק הניהול.</p>
-          <a href={`/hero-kids-platform${ROUTES.PLAY_HOME}`} className="btn-gold inline-block">
+          <a href={`${import.meta.env.BASE_URL}play`} className="btn-gold inline-block">
             חזור למסך המשחק
           </a>
         </div>
