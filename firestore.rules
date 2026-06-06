@@ -8,17 +8,17 @@ service cloud.firestore {
 
     function isGM() {
       return isAuthenticated() &&
-             exists(/databases/$(database)/documents/config/gm_users/$(request.auth.uid));
+             exists(/databases/$(database)/documents/gm_users/$(request.auth.uid));
     }
 
     function isOwner(uid) {
       return isAuthenticated() && request.auth.uid == uid;
     }
 
-    // ─── Config ───────────────────────────────────────────────
-    match /config/admins {
+    // ─── GM users (top-level, doc ID = uid) ───────────────────
+    match /gm_users/{uid} {
       allow read: if isAuthenticated();
-      allow write: if false;  // edit only via Firebase Console
+      allow write: if false;
     }
 
     // ─── Hero Templates ───────────────────────────────────────
