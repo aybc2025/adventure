@@ -1,0 +1,941 @@
+{
+  "items": [
+    {
+      "id": "potion_heal_small",
+      "name": "שיקוי ריפוי קטן",
+      "description": "מרפא 2 HP",
+      "emoji": "🧪",
+      "consumable": true,
+      "effect": { "type": "heal", "amount": 2 }
+    },
+    {
+      "id": "potion_heal_large",
+      "name": "שיקוי ריפוי גדול",
+      "description": "מרפא 4 HP",
+      "emoji": "🧪",
+      "consumable": true,
+      "effect": { "type": "heal", "amount": 4 }
+    },
+    {
+      "id": "elixir_full",
+      "name": "אליקסיר חיים",
+      "description": "מרפא לחלוטין",
+      "emoji": "✨",
+      "consumable": true,
+      "effect": { "type": "heal", "amount": 99 }
+    },
+    {
+      "id": "scroll_strength",
+      "name": "מגילת כוח",
+      "description": "+1 לתקיפה למשך 3 סיבובים",
+      "emoji": "📜",
+      "consumable": true,
+      "effect": { "type": "attack_bonus", "amount": 1, "duration": 3 }
+    },
+    {
+      "id": "scroll_shield",
+      "name": "מגילת מגן",
+      "description": "+1 להגנה למשך 3 סיבובים",
+      "emoji": "🛡️",
+      "consumable": true,
+      "effect": { "type": "defense_bonus", "amount": 1, "duration": 3 }
+    },
+    {
+      "id": "antidote",
+      "name": "נוגד רעל",
+      "description": "מנקה את כל הסטטוסים",
+      "emoji": "🌿",
+      "consumable": true,
+      "effect": { "type": "status_clear" }
+    },
+    {
+      "id": "torch",
+      "name": "לפיד",
+      "description": "מאיר את הדרך",
+      "emoji": "🔥",
+      "consumable": false,
+      "effect": { "type": "attack_bonus", "amount": 0 }
+    },
+    {
+      "id": "gold_coins",
+      "name": "מטבעות זהב",
+      "description": "אוצר נוצץ",
+      "emoji": "💰",
+      "consumable": false,
+      "effect": { "type": "attack_bonus", "amount": 0 }
+    }
+  ],
+  "hero_templates": [
+    {
+      "id": "warrior",
+      "name": "לוחם",
+      "class": "warrior",
+      "emoji": "⚔️",
+      "description": "חזק ועמיד, נלחם בקו הקדמי",
+      "hp_max": 5,
+      "attack_dice": "2d6",
+      "defense_dice": "2d6",
+      "special_name": "התקפה אדירה",
+      "special_description": "פגיעה של 3 נזק במפלצת אחת",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "w_hp", "name": "סיבולת", "description": "+1 HP", "effect": { "stat": "hp_max", "modifier": 1 } },
+        { "id": "w_atk", "name": "אימון בקרב", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "w_def", "name": "עמדת הגנה", "description": "+1 להגנה", "effect": { "stat": "defense_modifier", "modifier": 1 } },
+        { "id": "w_atk2", "name": "קוביה נוספת", "description": "קוביית תקיפה נוספת", "effect": { "stat": "attack_dice", "modifier": 1 } }
+      ]
+    },
+    {
+      "id": "mage",
+      "name": "מכשף",
+      "class": "mage",
+      "emoji": "🧙",
+      "description": "שולט בכישוף, חלש בגוף אבל חזק במחשבה",
+      "hp_max": 3,
+      "attack_dice": "2d6",
+      "defense_dice": "1d6",
+      "special_name": "כדור אש",
+      "special_description": "פגיעת אש בכל המפלצות",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "m_hp", "name": "כוח רוחני", "description": "+1 HP", "effect": { "stat": "hp_max", "modifier": 1 } },
+        { "id": "m_atk", "name": "כישוף מתקדם", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "m_def", "name": "מגן ארקאני", "description": "+1 קוביית הגנה", "effect": { "stat": "defense_dice", "modifier": 1 } },
+        { "id": "m_atk2", "name": "ספר לחשים", "description": "קוביית תקיפה נוספת", "effect": { "stat": "attack_dice", "modifier": 1 } }
+      ]
+    },
+    {
+      "id": "rogue",
+      "name": "נוכל",
+      "class": "rogue",
+      "emoji": "🗡️",
+      "description": "מהיר ועוקצני, מתקיף מהצללים",
+      "hp_max": 4,
+      "attack_dice": "2d6+1",
+      "defense_dice": "2d6",
+      "special_name": "מתקפת גב",
+      "special_description": "פגיעה כפולה במפלצת מופתעת",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "r_hp", "name": "זריזות", "description": "+1 HP", "effect": { "stat": "hp_max", "modifier": 1 } },
+        { "id": "r_atk", "name": "להב מחודד", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "r_def", "name": "התחמקות", "description": "+1 להגנה", "effect": { "stat": "defense_modifier", "modifier": 1 } },
+        { "id": "r_def2", "name": "צללים", "description": "קוביית הגנה נוספת", "effect": { "stat": "defense_dice", "modifier": 1 } }
+      ]
+    },
+    {
+      "id": "healer",
+      "name": "מרפא",
+      "class": "healer",
+      "emoji": "💚",
+      "description": "תומך בקבוצה ומרפא פצעים",
+      "hp_max": 4,
+      "attack_dice": "1d6",
+      "defense_dice": "2d6",
+      "special_name": "ריפוי קדוש",
+      "special_description": "מרפא 3 HP",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "h_hp", "name": "אמונה", "description": "+2 HP", "effect": { "stat": "hp_max", "modifier": 2 } },
+        { "id": "h_atk", "name": "מטה קדוש", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "h_def", "name": "ברכת המגן", "description": "+1 להגנה", "effect": { "stat": "defense_modifier", "modifier": 1 } },
+        { "id": "h_def2", "name": "אור אלוהי", "description": "קוביית הגנה נוספת", "effect": { "stat": "defense_dice", "modifier": 1 } }
+      ]
+    },
+    {
+      "id": "archer",
+      "name": "קשתית",
+      "class": "archer",
+      "emoji": "🏹",
+      "description": "תוקפת מרחוק, מדויקת וקטלנית",
+      "hp_max": 4,
+      "attack_dice": "2d6",
+      "defense_dice": "1d6+1",
+      "special_name": "ירייה מדויקת",
+      "special_description": "פגיעה ודאית של 2 נזק",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "a_hp", "name": "כושר", "description": "+1 HP", "effect": { "stat": "hp_max", "modifier": 1 } },
+        { "id": "a_atk", "name": "דיוק", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "a_atk2", "name": "ירייה כפולה", "description": "קוביית תקיפה נוספת", "effect": { "stat": "attack_dice", "modifier": 1 } },
+        { "id": "a_def", "name": "התחמקות זריזה", "description": "+1 להגנה", "effect": { "stat": "defense_modifier", "modifier": 1 } }
+      ]
+    },
+    {
+      "id": "barbarian",
+      "name": "ברברי",
+      "class": "barbarian",
+      "emoji": "🪓",
+      "description": "פראי וחזק, ההתקפה הטובה ביותר היא הגנה",
+      "hp_max": 6,
+      "attack_dice": "2d6+1",
+      "defense_dice": "1d6",
+      "special_name": "זעם",
+      "special_description": "פגיעה של 3 נזק עוצמתית",
+      "special_trigger": "once_per_combat",
+      "level_up_options": [
+        { "id": "b_hp", "name": "סיבולת ברברית", "description": "+2 HP", "effect": { "stat": "hp_max", "modifier": 2 } },
+        { "id": "b_atk", "name": "פראיות", "description": "+1 לתקיפה", "effect": { "stat": "attack_modifier", "modifier": 1 } },
+        { "id": "b_atk2", "name": "סערה", "description": "קוביית תקיפה נוספת", "effect": { "stat": "attack_dice", "modifier": 1 } },
+        { "id": "b_def", "name": "עור עבה", "description": "+1 להגנה", "effect": { "stat": "defense_modifier", "modifier": 1 } }
+      ]
+    }
+  ],
+  "adventures": [
+    {
+      "id": "basement_o_rats",
+      "title": "מרתף העכברושים",
+      "description": "הסוחר הכפרי שכר אותך לסלק עכברושים מהמרתף שלו. נשמע פשוט... עד שתגלה מה באמת מסתתר שם למטה.",
+      "emoji": "🐀",
+      "difficulty": 1,
+      "min_players": 1,
+      "max_players": 4,
+      "xp_reward": 15,
+      "published": true,
+      "rooms": [
+        {
+          "id": "bor_room1",
+          "title": "כניסת המרתף",
+          "order": 1,
+          "read_aloud": "מדרגות עץ ישנות יורדות לתוך אפלולית. ריח של עובש ועכברושים עולה מלמטה. אתה שומע שריקות חדות.",
+          "gm_notes": "פגישה ראשונה - 2 עכברושים קטנים. קל לחימום.",
+          "grid": {
+            "cols": 8,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":7,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"wall"},{"x":7,"y":3,"type":"door"},
+              {"x":0,"y":4,"type":"wall"},{"x":7,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":1,"y":5,"type":"wall"},{"x":2,"y":5,"type":"wall"},{"x":3,"y":5,"type":"wall"},{"x":4,"y":5,"type":"wall"},{"x":5,"y":5,"type":"wall"},{"x":6,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "rat1",
+              "name": "עכברוש קטן",
+              "emoji": "🐀",
+              "hp": 1,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":4,"y":2},
+              "loot": [],
+              "triggers": []
+            },
+            {
+              "id": "rat2",
+              "name": "עכברוש קטן",
+              "emoji": "🐀",
+              "hp": 1,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":5,"y":3},
+              "loot": [
+                {"item_id": "potion_heal_small", "drop_chance": 30}
+              ],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "bor_room2",
+          "title": "מחסן ישן",
+          "order": 2,
+          "read_aloud": "ארגזים ישנים ערוכים לאורך הקירות. אחד מהם רוטט - משהו זז בפנים. אתה רואה זוג עיניים אדומות מציצות מהפתח.",
+          "grid": {
+            "cols": 8,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":1,"y":1,"type":"treasure"},{"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"door"},{"x":7,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"wall"},{"x":6,"y":3,"type":"treasure"},{"x":7,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":7,"y":4,"type":"door"},
+              {"x":0,"y":5,"type":"wall"},{"x":1,"y":5,"type":"wall"},{"x":2,"y":5,"type":"wall"},{"x":3,"y":5,"type":"wall"},{"x":4,"y":5,"type":"wall"},{"x":5,"y":5,"type":"wall"},{"x":6,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "rat3",
+              "name": "עכברוש בוגר",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":3,"y":2},
+              "loot": [
+                {"item_id": "gold_coins", "drop_chance": 50}
+              ],
+              "triggers": []
+            },
+            {
+              "id": "rat4",
+              "name": "עכברוש בוגר",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":5,"y":3},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "bor_room3",
+          "title": "מנהרה אפלולית",
+          "order": 3,
+          "read_aloud": "המעבר הופך לצר וחשוך. הקירות לחים ומכוסים בריקבון. אתה שומע נשימות כבדות בקצה השני.",
+          "grid": {
+            "cols": 10,
+            "rows": 5,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"door"},{"x":4,"y":2,"type":"trap"},{"x":9,"y":2,"type":"door"},
+              {"x":0,"y":3,"type":"wall"},{"x":9,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":1,"y":4,"type":"wall"},{"x":2,"y":4,"type":"wall"},{"x":3,"y":4,"type":"wall"},{"x":4,"y":4,"type":"wall"},{"x":5,"y":4,"type":"wall"},{"x":6,"y":4,"type":"wall"},{"x":7,"y":4,"type":"wall"},{"x":8,"y":4,"type":"wall"},{"x":9,"y":4,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "rat_big",
+              "name": "עכברוש ענק",
+              "emoji": "🐀",
+              "hp": 3,
+              "attack_dice": "2d6",
+              "defense_dice": "1d6",
+              "position": {"x":6,"y":2},
+              "loot": [
+                {"item_id": "potion_heal_small", "drop_chance": 60}
+              ],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "poisoned", "target": "hero", "message": "העכברוש נשך! אתה מורעל"}
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "bor_room4",
+          "title": "האולם המרכזי",
+          "order": 4,
+          "read_aloud": "אולם רחב נפתח לפניך. ערימות של עצמות וזבל מכסות את הרצפה. שני עכברושים מסוכנים מסתערים עליך מהצדדים.",
+          "grid": {
+            "cols": 10,
+            "rows": 8,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":2,"y":2,"type":"treasure"},{"x":9,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":9,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":9,"y":4,"type":"door"},
+              {"x":0,"y":5,"type":"wall"},{"x":7,"y":5,"type":"treasure"},{"x":9,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":9,"y":6,"type":"wall"},
+              {"x":0,"y":7,"type":"wall"},{"x":1,"y":7,"type":"wall"},{"x":2,"y":7,"type":"wall"},{"x":3,"y":7,"type":"wall"},{"x":4,"y":7,"type":"wall"},{"x":5,"y":7,"type":"wall"},{"x":6,"y":7,"type":"wall"},{"x":7,"y":7,"type":"wall"},{"x":8,"y":7,"type":"wall"},{"x":9,"y":7,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "rat5",
+              "name": "עכברוש זריז",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "2d6",
+              "defense_dice": "2d6",
+              "position": {"x":3,"y":2},
+              "loot": [
+                {"item_id": "scroll_strength", "drop_chance": 40}
+              ],
+              "triggers": []
+            },
+            {
+              "id": "rat6",
+              "name": "עכברוש זריז",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "2d6",
+              "defense_dice": "2d6",
+              "position": {"x":6,"y":5},
+              "loot": [
+                {"item_id": "antidote", "drop_chance": 30}
+              ],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "bor_room5",
+          "title": "מאורת המלך",
+          "order": 5,
+          "read_aloud": "אתה נכנס לחדר עצום. במרכזו יושב עכברוש ענקי - שלוש פעמים גודלם של האחרים. כתר עכברושי קטן על ראשו. זהו מלך העכברושים, ואתה הפרצת לארמונו!",
+          "gm_notes": "קרב הבוס. אם הגיבור בעייתי, אפשר להוריד HP ל-5.",
+          "grid": {
+            "cols": 10,
+            "rows": 8,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":4,"y":1,"type":"treasure"},{"x":5,"y":1,"type":"treasure"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":9,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":9,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":9,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":9,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":9,"y":6,"type":"wall"},
+              {"x":0,"y":7,"type":"wall"},{"x":1,"y":7,"type":"wall"},{"x":2,"y":7,"type":"wall"},{"x":3,"y":7,"type":"wall"},{"x":4,"y":7,"type":"wall"},{"x":5,"y":7,"type":"wall"},{"x":6,"y":7,"type":"wall"},{"x":7,"y":7,"type":"wall"},{"x":8,"y":7,"type":"wall"},{"x":9,"y":7,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "rat_king",
+              "name": "מלך העכברושים",
+              "emoji": "👑",
+              "hp": 6,
+              "attack_dice": "2d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":5,"y":3},
+              "loot": [
+                {"item_id": "elixir_full", "drop_chance": 100},
+                {"item_id": "gold_coins", "drop_chance": 100},
+                {"item_id": "scroll_strength", "drop_chance": 50}
+              ],
+              "triggers": [
+                {
+                  "event": "on_round_start",
+                  "effect": "heal",
+                  "params": {"amount": 1, "target": "monster", "message": "מלך העכברושים מתרפא"}
+                },
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "poisoned", "target": "hero", "message": "הכתר משחרר רעל"}
+                }
+              ]
+            },
+            {
+              "id": "rat_guard1",
+              "name": "שומר",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":3,"y":4},
+              "loot": [],
+              "triggers": []
+            },
+            {
+              "id": "rat_guard2",
+              "name": "שומר",
+              "emoji": "🐀",
+              "hp": 2,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":7,"y":4},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "witches_snowstorm",
+      "title": "סופת השלג של המכשפה",
+      "description": "מכשפת השלגים זימנה סערה מימית על הכפר. עליך לחצות את היער הקפוא, לעבור במערה הקרחונית, ולהגיע לטירת הקרח כדי להפר את הכישוף.",
+      "emoji": "❄️",
+      "difficulty": 3,
+      "min_players": 2,
+      "max_players": 4,
+      "xp_reward": 25,
+      "published": true,
+      "rooms": [
+        {
+          "id": "ws_room1",
+          "title": "שולי היער הקפוא",
+          "order": 1,
+          "read_aloud": "השלג נופל בכבדות. עצים קפואים עומדים סביבכם כפסלים לבנים. מבין הענפים אתם רואים זוג עיניים זוהרות - זאב שלג מסתכל עליכם.",
+          "grid": {
+            "cols": 8,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":3,"y":2,"type":"wall"},{"x":7,"y":2,"type":"door"},
+              {"x":0,"y":3,"type":"wall"},
+              {"x":5,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":2,"y":5,"type":"wall"},{"x":5,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "ws_wolf1",
+              "name": "זאב שלג",
+              "emoji": "🐺",
+              "hp": 2,
+              "attack_dice": "2d6",
+              "defense_dice": "1d6",
+              "position": {"x":5,"y":2},
+              "loot": [{"item_id": "potion_heal_small", "drop_chance": 50}],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "deal_damage",
+                  "params": {"amount": 1, "message": "קור עז כואב בעצמות"}
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ws_room2",
+          "title": "המעבר הקפוא",
+          "order": 2,
+          "read_aloud": "אגם קפוא משתרע לפניכם. הקרח דק וחורק תחת נעליכם. רוחות שלג זדוניות מתעופפות מעליכם וצועקות בשפה זרה.",
+          "grid": {
+            "cols": 10,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"trap"},{"x":3,"y":0,"type":"trap"},{"x":6,"y":0,"type":"trap"},{"x":9,"y":0,"type":"trap"},
+              {"x":0,"y":2,"type":"door"},{"x":9,"y":2,"type":"door"},
+              {"x":2,"y":3,"type":"trap"},{"x":5,"y":3,"type":"trap"},{"x":8,"y":3,"type":"trap"},
+              {"x":0,"y":5,"type":"trap"},{"x":3,"y":5,"type":"trap"},{"x":6,"y":5,"type":"trap"},{"x":9,"y":5,"type":"trap"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "ws_sprite1",
+              "name": "רוח שלג",
+              "emoji": "❄️",
+              "hp": 1,
+              "attack_dice": "1d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":3,"y":2},
+              "loot": [],
+              "triggers": [
+                {
+                  "event": "on_death",
+                  "effect": "apply_status",
+                  "params": {"status": "frozen", "target": "hero", "message": "הרוח קופאת ומקפיאה אותך!"}
+                }
+              ]
+            },
+            {
+              "id": "ws_sprite2",
+              "name": "רוח שלג",
+              "emoji": "❄️",
+              "hp": 1,
+              "attack_dice": "1d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":7,"y":3},
+              "loot": [{"item_id": "scroll_shield", "drop_chance": 40}],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "ws_room3",
+          "title": "מערת הקרח",
+          "order": 3,
+          "read_aloud": "מערה ענקית של קרח כחול שקוף נפרשת לפניכם. נטיפי קרח חדים תלויים מהתקרה. מעבר עמוק במערה, יצור גדול ושעיר ער ומתחיל לזוז.",
+          "grid": {
+            "cols": 10,
+            "rows": 7,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":3,"y":2,"type":"trap"},{"x":9,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":9,"y":3,"type":"door"},
+              {"x":0,"y":4,"type":"wall"},{"x":6,"y":4,"type":"trap"},{"x":9,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":9,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":1,"y":6,"type":"wall"},{"x":8,"y":6,"type":"wall"},{"x":9,"y":6,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "ws_yeti",
+              "name": "ייטי",
+              "emoji": "🦍",
+              "hp": 4,
+              "attack_dice": "2d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":6,"y":3},
+              "loot": [
+                {"item_id": "potion_heal_large", "drop_chance": 70},
+                {"item_id": "scroll_strength", "drop_chance": 50}
+              ],
+              "triggers": [
+                {
+                  "event": "on_round_start",
+                  "effect": "deal_damage",
+                  "params": {"amount": 1, "message": "הקור הקפוא שורף את העור"}
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ws_room4",
+          "title": "שערי טירת הקרח",
+          "order": 4,
+          "read_aloud": "שערים גבוהים מקרח חצוב עומדים בפניכם. שני שומרים קרחוניים בכניסה - יצורי קרח חיים, חסרי לב. שלגים מסתחררים סביבם.",
+          "grid": {
+            "cols": 8,
+            "rows": 7,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":7,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":3,"y":3,"type":"treasure"},{"x":4,"y":3,"type":"treasure"},{"x":7,"y":3,"type":"door"},
+              {"x":0,"y":4,"type":"wall"},{"x":7,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":1,"y":6,"type":"wall"},{"x":2,"y":6,"type":"wall"},{"x":3,"y":6,"type":"wall"},{"x":4,"y":6,"type":"wall"},{"x":5,"y":6,"type":"wall"},{"x":6,"y":6,"type":"wall"},{"x":7,"y":6,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "ws_golem1",
+              "name": "גולם קרח",
+              "emoji": "🧊",
+              "hp": 3,
+              "attack_dice": "2d6",
+              "defense_dice": "2d6+1",
+              "position": {"x":2,"y":3},
+              "loot": [{"item_id": "antidote", "drop_chance": 50}],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "frozen", "target": "hero", "message": "הגולם מתיז קרח עליך"}
+                }
+              ]
+            },
+            {
+              "id": "ws_golem2",
+              "name": "גולם קרח",
+              "emoji": "🧊",
+              "hp": 3,
+              "attack_dice": "2d6",
+              "defense_dice": "2d6+1",
+              "position": {"x":5,"y":3},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "ws_room5",
+          "title": "אולם הכס של המכשפה",
+          "order": 5,
+          "read_aloud": "אולם עצום בקרח כחול. מכשפת השלגים יושבת על כס קפוא, מטה ענק של קרח בידה. עיניה כחולות וקפואות. 'מי מעז להפריע למנוחתי?'",
+          "gm_notes": "בוס מאתגר. המטה הקפוא שלה גורם להקפאה. אם הגיבור חלש, אפשר להוריד הגנה ל-2d6.",
+          "grid": {
+            "cols": 10,
+            "rows": 8,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":4,"y":1,"type":"treasure"},{"x":5,"y":1,"type":"treasure"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":9,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":9,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":9,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":9,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":9,"y":6,"type":"wall"},
+              {"x":0,"y":7,"type":"wall"},{"x":1,"y":7,"type":"wall"},{"x":2,"y":7,"type":"wall"},{"x":3,"y":7,"type":"wall"},{"x":4,"y":7,"type":"wall"},{"x":5,"y":7,"type":"wall"},{"x":6,"y":7,"type":"wall"},{"x":7,"y":7,"type":"wall"},{"x":8,"y":7,"type":"wall"},{"x":9,"y":7,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "ws_witch",
+              "name": "מכשפת השלגים",
+              "emoji": "🧙‍♀️",
+              "hp": 8,
+              "attack_dice": "2d6+1",
+              "defense_dice": "2d6+1",
+              "position": {"x":5,"y":2},
+              "loot": [
+                {"item_id": "elixir_full", "drop_chance": 100},
+                {"item_id": "scroll_strength", "drop_chance": 100},
+                {"item_id": "scroll_shield", "drop_chance": 100}
+              ],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "frozen", "target": "hero", "message": "המטה הקפוא קופא אותך!"}
+                },
+                {
+                  "event": "on_round_start",
+                  "effect": "deal_damage",
+                  "params": {"amount": 1, "message": "סופת השלג שורקת"}
+                }
+              ]
+            },
+            {
+              "id": "ws_w_sprite",
+              "name": "רוח שלג נאמנה",
+              "emoji": "❄️",
+              "hp": 2,
+              "attack_dice": "1d6+1",
+              "defense_dice": "1d6",
+              "position": {"x":3,"y":4},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frozen_garden",
+      "title": "הגן הקפוא",
+      "description": "הגן הקסום של הנסיכה איזבל קפא לפתע. עליך לחקור את הגן, לפענח את החידה, ולהשיב לו את חיותו.",
+      "emoji": "🌸",
+      "difficulty": 2,
+      "min_players": 1,
+      "max_players": 3,
+      "xp_reward": 20,
+      "published": true,
+      "rooms": [
+        {
+          "id": "fg_room1",
+          "title": "שער הגן",
+          "order": 1,
+          "read_aloud": "שער ברזל מסולסל מוקף ורדים קפואים. מאחוריו פוסל קרח בצורת פיה - לא, רגע, הוא נע! פיית קרח קטנה מתעוררת ומסתערת עליך.",
+          "grid": {
+            "cols": 8,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":7,"y":2,"type":"door"},
+              {"x":0,"y":3,"type":"wall"},{"x":7,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":7,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":1,"y":5,"type":"wall"},{"x":6,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "fg_fairy1",
+              "name": "פיית קרח",
+              "emoji": "🧚",
+              "hp": 1,
+              "attack_dice": "1d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":4,"y":3},
+              "loot": [{"item_id": "potion_heal_small", "drop_chance": 60}],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "fg_room2",
+          "title": "שביל הוורדים",
+          "order": 2,
+          "read_aloud": "שביל אבן עובר בין שיחי ורדים קפואים. הקוצים חדים כסכינים. שני זאבי הצללים מסתתרים בצידי השביל.",
+          "grid": {
+            "cols": 9,
+            "rows": 5,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":8,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"door"},{"x":4,"y":2,"type":"trap"},{"x":8,"y":2,"type":"door"},
+              {"x":0,"y":3,"type":"wall"},{"x":8,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":1,"y":4,"type":"wall"},{"x":8,"y":4,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "fg_wolf1",
+              "name": "זאב צל",
+              "emoji": "🐺",
+              "hp": 2,
+              "attack_dice": "2d6",
+              "defense_dice": "1d6+1",
+              "position": {"x":3,"y":1},
+              "loot": [],
+              "triggers": []
+            },
+            {
+              "id": "fg_wolf2",
+              "name": "זאב צל",
+              "emoji": "🐺",
+              "hp": 2,
+              "attack_dice": "2d6",
+              "defense_dice": "1d6+1",
+              "position": {"x":5,"y":3},
+              "loot": [{"item_id": "scroll_strength", "drop_chance": 50}],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "fg_room3",
+          "title": "מזרקת הקרח",
+          "order": 3,
+          "read_aloud": "מזרקת אבן עומדת במרכז כיכר. במקום מים, גושי קרח קופאים מתפרצים כלפי מעלה. גולם אבן וקרח שומר על המזרקה.",
+          "grid": {
+            "cols": 9,
+            "rows": 7,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":8,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":4,"y":2,"type":"treasure"},{"x":8,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":8,"y":3,"type":"door"},
+              {"x":0,"y":4,"type":"wall"},{"x":8,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":8,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":8,"y":6,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "fg_golem",
+              "name": "גולם המזרקה",
+              "emoji": "🗿",
+              "hp": 4,
+              "attack_dice": "2d6",
+              "defense_dice": "2d6+1",
+              "position": {"x":4,"y":3},
+              "loot": [
+                {"item_id": "potion_heal_large", "drop_chance": 60},
+                {"item_id": "scroll_shield", "drop_chance": 40}
+              ],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "deal_damage",
+                  "params": {"amount": 1, "message": "שברי קרח עפים בכל הכיוונים"}
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fg_room4",
+          "title": "החממה הקפואה",
+          "order": 4,
+          "read_aloud": "חממה זכוכית ענקית, מלאה בצמחים קפואים. פרחים בלתי-מוכרים מתעוררים בכניסתכם וממהרים להתקיף - צמחי טורף!",
+          "grid": {
+            "cols": 8,
+            "rows": 6,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":7,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"door"},{"x":7,"y":2,"type":"door"},
+              {"x":0,"y":3,"type":"wall"},{"x":7,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":7,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":1,"y":5,"type":"wall"},{"x":2,"y":5,"type":"wall"},{"x":5,"y":5,"type":"wall"},{"x":6,"y":5,"type":"wall"},{"x":7,"y":5,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "fg_plant1",
+              "name": "צמח טורף",
+              "emoji": "🌺",
+              "hp": 2,
+              "attack_dice": "1d6+1",
+              "defense_dice": "1d6",
+              "position": {"x":3,"y":2},
+              "loot": [{"item_id": "antidote", "drop_chance": 50}],
+              "triggers": [
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "poisoned", "target": "hero", "message": "החוצן צובט אותך עם רעל"}
+                }
+              ]
+            },
+            {
+              "id": "fg_plant2",
+              "name": "צמח טורף",
+              "emoji": "🌺",
+              "hp": 2,
+              "attack_dice": "1d6+1",
+              "defense_dice": "1d6",
+              "position": {"x":5,"y":3},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        },
+        {
+          "id": "fg_room5",
+          "title": "פסל הנסיכה",
+          "order": 5,
+          "read_aloud": "במרכז גן סודי עומד פסל קרח של הנסיכה איזבל. כשאתה מתקרב, רוח רעה נחלצת מהפסל - זה רוח השלג שלוכדת אותה! חייבים לנצח אותה לפני שתשתלט גם עליכם.",
+          "gm_notes": "בוס סיומי. אחרי ניצחון, הגן ישוב לפרוח. תיאור סוף הרפתקה אופציונלי לאחר ניצחון.",
+          "grid": {
+            "cols": 10,
+            "rows": 8,
+            "cells": [
+              {"x":0,"y":0,"type":"wall"},{"x":1,"y":0,"type":"wall"},{"x":2,"y":0,"type":"wall"},{"x":3,"y":0,"type":"wall"},{"x":4,"y":0,"type":"wall"},{"x":5,"y":0,"type":"wall"},{"x":6,"y":0,"type":"wall"},{"x":7,"y":0,"type":"wall"},{"x":8,"y":0,"type":"wall"},{"x":9,"y":0,"type":"wall"},
+              {"x":0,"y":1,"type":"wall"},{"x":9,"y":1,"type":"wall"},
+              {"x":0,"y":2,"type":"wall"},{"x":9,"y":2,"type":"wall"},
+              {"x":0,"y":3,"type":"door"},{"x":4,"y":3,"type":"treasure"},{"x":5,"y":3,"type":"treasure"},{"x":9,"y":3,"type":"wall"},
+              {"x":0,"y":4,"type":"wall"},{"x":9,"y":4,"type":"wall"},
+              {"x":0,"y":5,"type":"wall"},{"x":9,"y":5,"type":"wall"},
+              {"x":0,"y":6,"type":"wall"},{"x":9,"y":6,"type":"wall"},
+              {"x":0,"y":7,"type":"wall"},{"x":1,"y":7,"type":"wall"},{"x":2,"y":7,"type":"wall"},{"x":3,"y":7,"type":"wall"},{"x":4,"y":7,"type":"wall"},{"x":5,"y":7,"type":"wall"},{"x":6,"y":7,"type":"wall"},{"x":7,"y":7,"type":"wall"},{"x":8,"y":7,"type":"wall"},{"x":9,"y":7,"type":"wall"}
+            ]
+          },
+          "monsters": [
+            {
+              "id": "fg_spirit",
+              "name": "רוח השלג",
+              "emoji": "👻",
+              "hp": 7,
+              "attack_dice": "2d6+1",
+              "defense_dice": "2d6",
+              "position": {"x":5,"y":4},
+              "loot": [
+                {"item_id": "elixir_full", "drop_chance": 100},
+                {"item_id": "scroll_strength", "drop_chance": 75},
+                {"item_id": "antidote", "drop_chance": 75}
+              ],
+              "triggers": [
+                {
+                  "event": "on_round_start",
+                  "effect": "deal_damage",
+                  "params": {"amount": 1, "message": "רוח קרה חודרת ללב"}
+                },
+                {
+                  "event": "on_hit",
+                  "effect": "apply_status",
+                  "params": {"status": "frozen", "target": "hero", "message": "אתה קופא במקום"}
+                },
+                {
+                  "event": "on_death",
+                  "effect": "heal",
+                  "params": {"amount": 99, "target": "hero", "message": "הקסם נשבר! הגן שב לפרוח."}
+                }
+              ]
+            },
+            {
+              "id": "fg_minion1",
+              "name": "רסיס קרח",
+              "emoji": "💎",
+              "hp": 1,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":3,"y":2},
+              "loot": [],
+              "triggers": []
+            },
+            {
+              "id": "fg_minion2",
+              "name": "רסיס קרח",
+              "emoji": "💎",
+              "hp": 1,
+              "attack_dice": "1d6",
+              "defense_dice": "1d6",
+              "position": {"x":7,"y":5},
+              "loot": [],
+              "triggers": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #0d0500;
+  --color-surface: #1f0e00;
+  --color-surface-2: #2a1400;
+  --color-primary: #8B4513;
+  --color-gold: #d4a017;
+  --color-gold-bright: #f0c040;
+  --color-danger: #8b0000;
+  --color-text: #f5e6c8;
+  --color-muted: #a08060;
+  --color-success: #4a7c2e;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-bg text-text font-body min-h-screen;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(212, 160, 23, 0.06), transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(139, 69, 19, 0.08), transparent 50%),
+      var(--color-bg);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-wide;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-surface);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gold);
+  }
+}
+
+@layer components {
+  .card-fantasy {
+    @apply bg-surface border-2 border-primary/60 rounded-lg p-4 shadow-lg;
+    background-image:
+      linear-gradient(rgba(31, 14, 0, 0.85), rgba(31, 14, 0, 0.9)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .card-fantasy-gold {
+    @apply border-gold/70;
+    box-shadow: 0 0 12px rgba(212, 160, 23, 0.2);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-text px-4 py-2 rounded-md font-display tracking-wide
+           border border-gold/40 hover:bg-gold hover:text-bg
+           transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:text-text;
+  }
+
+  .btn-gold {
+    @apply bg-gold text-bg px-4 py-2 rounded-md font-display tracking-wide
+           border-2 border-gold-bright hover:bg-gold-bright
+           transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-text px-4 py-2 rounded-md font-display tracking-wide
+           border border-text/20 hover:opacity-90
+           transition-all duration-200 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply text-muted hover:text-gold px-3 py-2 rounded-md
+           transition-colors duration-200;
+  }
+
+  .input-fantasy {
+    @apply bg-bg border border-primary/60 text-text rounded-md px-3 py-2
+           focus:border-gold focus:outline-none transition-colors;
+  }
+
+  .label-fantasy {
+    @apply block text-muted text-sm mb-1 font-display tracking-wider;
+  }
+
+  .heading-glow {
+    text-shadow: 0 0 12px rgba(212, 160, 23, 0.5);
+  }
+
+  .read-aloud {
+    @apply bg-bg/60 border-r-4 border-gold rounded-md p-4 my-3 italic text-text/90;
+  }
+
+  .gm-note {
+    @apply bg-primary/20 border-r-4 border-primary rounded-md p-4 my-3 text-text/80 text-sm;
+  }
+}
+
+/* Dice animations */
+.dice {
+  @apply inline-flex items-center justify-center w-12 h-12 rounded-md
+         bg-text text-bg font-display font-bold text-xl
+         border-2 border-gold;
+}
+
+.dice-rolling {
+  animation: diceRoll 0.6s ease-out;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply inline-block w-8 h-8 border-4 border-primary border-t-gold rounded-full;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Glow effect for important elements */
+.glow-gold {
+  filter: drop-shadow(0 0 8px rgba(212, 160, 23, 0.6));
+}
+
+/* RTL fixes for emojis and icons */
+.no-rtl {
+  direction: ltr;
+  unicode-bidi: embed;
+}

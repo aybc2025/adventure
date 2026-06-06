@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#0d0500"/>
+  <path d="M32 8 L40 24 L56 26 L44 38 L48 56 L32 48 L16 56 L20 38 L8 26 L24 24 Z"
+        fill="#d4a017" stroke="#8B4513" stroke-width="2"/>
+  <text x="32" y="38" font-size="18" font-family="serif" fill="#0d0500"
+        text-anchor="middle" font-weight="bold">⚔</text>
+</svg>
