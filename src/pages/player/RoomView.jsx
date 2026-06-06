@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase.js';
@@ -59,6 +59,7 @@ export default function RoomView() {
   const [transitioning, setTransitioning] = useState(false);
   const [heroPosition, setHeroPosition] = useState(null);
   const [movesLeft, setMovesLeft] = useState(HERO_MOVE_RANGE);
+  const heroPositionRef = useRef(heroPosition);
 
   // Find the current room object once data loads
   useEffect(() => {
@@ -101,14 +102,18 @@ export default function RoomView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRoom, hero, session]);
 
+  // Keep ref in sync so the monsters-turn closure always sees the latest position
+  useEffect(() => { heroPositionRef.current = heroPosition; }, [heroPosition]);
+
   // Auto-trigger monsters' turn after a delay
   useEffect(() => {
     if (!combatState) return;
     if (combatState.turn !== 'monsters') return;
     if (isCombatOver(combatState)) return;
 
+    const grid = currentRoom?.grid ?? null;
     const t = setTimeout(() => {
-      const { state } = monstersTurn(combatState);
+      const { state } = monstersTurn(combatState, grid, heroPositionRef.current);
       setCombatState(state);
     }, 1000);
     return () => clearTimeout(t);

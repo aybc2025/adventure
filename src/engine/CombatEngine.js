@@ -260,17 +260,105 @@ export function playerUseSpecial(state, params = {}) {
 }
 
 /**
- * All living monsters take their turn.
+ * BFS path from `start` toward a cell adjacent to `heroPos`.
+ * Returns an array of positions (steps) to take, capped at `moveRange`.
+ * Treats walls + other living-monster cells as blocked.
  */
-export function monstersTurn(state) {
+function pathTowardHero(start, heroPos, blocked, cols, rows, moveRange) {
+  if (!start || !heroPos) return [];
+  const queue = [{ x: start.x, y: start.y, path: [] }];
+  const visited = new Set([`${start.x},${start.y}`]);
+
+  while (queue.length) {
+    const { x, y, path } = queue.shift();
+
+    // Adjacent to hero — we can stop here
+    if (Math.max(Math.abs(x - heroPos.x), Math.abs(y - heroPos.y)) <= 1 && path.length > 0) {
+      return path.slice(0, moveRange);
+    }
+    if (path.length >= moveRange) continue;
+
+    for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
+      // Never step onto the hero's cell — only adjacent
+      if (nx === heroPos.x && ny === heroPos.y) continue;
+      const key = `${nx},${ny}`;
+      if (blocked.has(key) || visited.has(key)) continue;
+      visited.add(key);
+      queue.push({ x: nx, y: ny, path: [...path, { x: nx, y: ny }] });
+    }
+  }
+  return [];
+}
+
+/**
+ * All living monsters take their turn.
+ * Optionally accepts `grid` + `heroPosition` to enable positional movement.
+ */
+export function monstersTurn(state, grid = null, heroPosition = null) {
   if (state.outcome !== COMBAT_OUTCOMES.IN_PROGRESS) return { state };
   if (state.turn !== 'monsters') return { state };
 
   let newState = { ...state };
 
+  // ── 1. Move monsters toward the hero ─────────────────────────
+  if (grid && heroPosition) {
+    const cols = grid.cols || 8;
+    const rows = grid.rows || 6;
+
+    const walls = new Set();
+    (grid.cells || []).forEach((c) => { if (c.type === 'wall') walls.add(`${c.x},${c.y}`); });
+
+    const movedMonsters = [...newState.monsters];
+    for (let i = 0; i < movedMonsters.length; i++) {
+      const m = movedMonsters[i];
+      if (m.hp <= 0 || !m.position) continue;
+
+      const alreadyAdjacent =
+        Math.max(
+          Math.abs(heroPosition.x - m.position.x),
+          Math.abs(heroPosition.y - m.position.y)
+        ) <= 1;
+      if (alreadyAdjacent) continue; // no need to move
+
+      const moveRange = m.move_range || 2;
+
+      // blocked = walls + positions of other living monsters
+      const blocked = new Set(walls);
+      movedMonsters.forEach((other, j) => {
+        if (j !== i && other.hp > 0 && other.position)
+          blocked.add(`${other.position.x},${other.position.y}`);
+      });
+
+      const path = pathTowardHero(m.position, heroPosition, blocked, cols, rows, moveRange);
+      if (path.length > 0) {
+        movedMonsters[i] = { ...m, position: path[path.length - 1] };
+        newState = {
+          ...newState,
+          log: [
+            ...newState.log,
+            { type: 'monster_move', message: `${m.name} מתקרב...`, monster_id: m.id }
+          ]
+        };
+      }
+    }
+    newState = { ...newState, monsters: movedMonsters };
+  }
+
+  // ── 2. Attack if adjacent ─────────────────────────────────────
   for (const monster of newState.monsters) {
     if (monster.hp <= 0) continue;
     if (newState.hero.hp <= 0) break;
+
+    // Skip attack if grid-mode is on and monster is not adjacent
+    if (grid && heroPosition && monster.position) {
+      const dist = Math.max(
+        Math.abs(heroPosition.x - monster.position.x),
+        Math.abs(heroPosition.y - monster.position.y)
+      );
+      if (dist > 1) continue;
+    }
 
     const attackResult = rollAttack(
       monster.attack_dice,
@@ -297,7 +385,6 @@ export function monstersTurn(state) {
   }
 
   newState = checkCombatEnd(newState);
-
   if (newState.outcome === COMBAT_OUTCOMES.IN_PROGRESS) {
     newState = advanceTurn(newState);
   }
