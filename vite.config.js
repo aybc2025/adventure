@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/hero-kids-platform/',
+  base: '/adventure/',
   plugins: [
     react(),
     VitePWA({
@@ -14,8 +14,8 @@ export default defineConfig({
         short_name: 'Hero Kids',
         lang: 'he',
         dir: 'rtl',
-        start_url: '/hero-kids-platform/',
-        scope: '/hero-kids-platform/',
+        start_url: '/adventure/',
+        scope: '/adventure/',
         display: 'standalone',
         background_color: '#0d0500',
         theme_color: '#d4a017',
