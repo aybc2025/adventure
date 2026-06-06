@@ -8,8 +8,7 @@ service cloud.firestore {
 
     function isGM() {
       return isAuthenticated() &&
-             request.auth.token.email in
-             get(/databases/$(database)/documents/config/admins).data.emails;
+             exists(/databases/$(database)/documents/config/gm_users/$(request.auth.uid));
     }
 
     function isOwner(uid) {
