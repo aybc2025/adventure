@@ -66,7 +66,7 @@ service cloud.firestore {
                            'attack_dice','defense_dice','special_name',
                            'special_description','special_trigger','emoji',
                            'level','xp','xp_to_next_level','applied_upgrades',
-                           'created_at','last_played'
+                           'starting_items','created_at','last_played'
                          ]);
         allow update: if isOwner(uid);
         allow delete: if isOwner(uid) || isGM();
