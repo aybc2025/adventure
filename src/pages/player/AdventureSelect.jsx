@@ -109,10 +109,9 @@ function AdventureStartModal({ adventure, hero, inventory, onClose, onStart, sta
   if (!adventure) return null;
 
   const firstRoom = rooms[0];
-  const inventorySnapshot = {};
-  for (const [k, v] of Object.entries(inventory || {})) {
-    inventorySnapshot[k] = { item_id: v.item_id, quantity: v.quantity };
-  }
+
+  // Build a preview of items the hero starts this adventure with
+  const startingItems = hero?.starting_items || [];
 
   return (
     <Modal
@@ -145,13 +144,24 @@ function AdventureStartModal({ adventure, hero, inventory, onClose, onStart, sta
           <div className="text-gold font-display">+{adventure.xp_reward || 0} XP</div>
         </div>
       </div>
+
+      {/* Starting items notice (PDF rule: heroes start with potions from hero card) */}
+      {startingItems.length > 0 && (
+        <div className="bg-bg/40 rounded p-2 mb-3 text-sm">
+          <span className="text-muted">ציוד פתיחה: </span>
+          <span className="text-gold">
+            {startingItems.map((si) => `${si.item_id === 'potion_heal_small' ? '🧪' : '📦'} ×${si.quantity}`).join('  ')}
+          </span>
+        </div>
+      )}
+
       {roomsLoading ? (
         <p className="text-muted text-sm text-center">טוען חדרים...</p>
       ) : !firstRoom ? (
         <p className="text-danger text-sm text-center">להרפתקה זו אין חדרים מוגדרים</p>
       ) : (
         <p className="text-muted text-sm">
-          {rooms.length} חדרים. הגיבור: <span className="text-gold">{hero?.custom_name}</span>
+          {rooms.length} חדרים · הגיבור: <span className="text-gold">{hero?.custom_name}</span>
         </p>
       )}
       {error && <p className="text-danger text-sm mt-2">{error}</p>}
@@ -159,18 +169,38 @@ function AdventureStartModal({ adventure, hero, inventory, onClose, onStart, sta
   );
 }
 
+/**
+ * Build the session inventory snapshot and create the session in Firestore.
+ *
+ * PDF rule (p.16): "Heroes start each adventure with potions shown on their
+ * hero card." — hero.starting_items holds those items.
+ *
+ * Merge strategy:
+ *   1. Start from the hero's current persistent inventory.
+ *   2. Add starting_items on top (stacking with any already-held copies).
+ *      This means accumulated potions are kept, and the hero always gets
+ *      at least their starting allocation.
+ */
 async function startAdventure(adventure, hero, inventory, createSession) {
-  // Note: rooms are fetched via the modal; we use the adventure's room_order for first room
-  // Or, fetch rooms here. Simpler: store the first room ID in adventure.room_order[0]
-  // If room_order isn't set, fall back to fetching.
+  // Step 1: copy current persistent inventory into snapshot
   const inventorySnapshot = {};
   for (const [k, v] of Object.entries(inventory || {})) {
     inventorySnapshot[k] = { item_id: v.item_id, quantity: v.quantity };
   }
 
+  // Step 2: merge starting_items (PDF rule — potions from hero card)
+  for (const si of hero?.starting_items || []) {
+    if (!si.item_id || si.quantity <= 0) continue;
+    const existing = inventorySnapshot[si.item_id];
+    inventorySnapshot[si.item_id] = {
+      item_id:  si.item_id,
+      quantity: (existing?.quantity || 0) + si.quantity
+    };
+  }
+
+  // Step 3: resolve the first room ID
   let firstRoomId = adventure.room_order?.[0];
   if (!firstRoomId) {
-    // Fallback: fetch rooms
     const { collection, getDocs, orderBy, query } = await import('firebase/firestore');
     const { db } = await import('../../config/firebase.js');
     const q = query(
@@ -184,11 +214,12 @@ async function startAdventure(adventure, hero, inventory, createSession) {
     throw new Error('להרפתקה אין חדרים');
   }
 
+  // Step 4: create session
   const sessionId = await createSession({
     adventureId: adventure.id,
-    heroId: hero.id,
-    heroHp: hero.hp_max,
-    inventory: inventorySnapshot,
+    heroId:      hero.id,
+    heroHp:      hero.hp_max,
+    inventory:   inventorySnapshot,
     firstRoomId
   });
   return sessionId;
