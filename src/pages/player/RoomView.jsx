@@ -159,6 +159,8 @@ export default function RoomView() {
     setTransitioning(true);
     try {
       await updateSession({ status: SESSION_STATUS.FAILED, hero_hp: 0 });
+      await incrementStat('adventures_completed',    1);
+      await incrementStat('total_monsters_defeated', session.monsters_defeated || 0);
       await recordHistory({
         adventure_id:     session.adventure_id,
         adventure_title:  adventure?.title || 'הרפתקה',
