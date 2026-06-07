@@ -64,6 +64,10 @@ export function canUseItem(item, combatState) {
 /**
  * Apply an item's effect to the combat state.
  * Returns { state, log }
+ *
+ * PDF rule (p.16): "It returns the hero to full health."
+ * Potions with effect.full_heal = true restore HP to hp_max.
+ * Potions with effect.amount heal by that fixed amount.
  */
 export function useItem(item, combatState) {
   const newState = {
@@ -76,14 +80,22 @@ export function useItem(item, combatState) {
   switch (effect.type) {
     case ITEM_EFFECTS.HEAL: {
       const before = newState.hero.hp;
-      newState.hero.hp = Math.min(
-        newState.hero.hp_max,
-        newState.hero.hp + (effect.amount || 0)
-      );
+
+      if (effect.full_heal) {
+        // PDF rule: potions restore to full health
+        newState.hero.hp = newState.hero.hp_max;
+      } else {
+        newState.hero.hp = Math.min(
+          newState.hero.hp_max,
+          newState.hero.hp + (effect.amount || 0)
+        );
+      }
+
       const actual = newState.hero.hp - before;
+      const label = effect.full_heal ? 'ריפוי מלא' : `ריפוי +${actual}`;
       log.push({
         type: 'item_use',
-        message: `${item.name}: ריפוי +${actual}`,
+        message: `${item.name}: ${label} (HP: ${newState.hero.hp}/${newState.hero.hp_max})`,
         item_id: item.id || item.itemId
       });
       break;
