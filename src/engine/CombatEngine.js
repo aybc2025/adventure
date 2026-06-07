@@ -1,4 +1,4 @@
-import { rollAttack, roll } from './DiceRoller.js';
+import { rollAttack } from './DiceRoller.js';
 import {
   resolveTriggers,
   resolveStatusRoundStart,
@@ -15,7 +15,19 @@ import {
 import { TRIGGER_EVENTS, COMBAT_OUTCOMES } from '../config/constants.js';
 
 /**
+ * Roll a single d6.
+ */
+function d6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+/**
  * Initialise combat state for a room.
+ *
+ * PDF rule (p.18 — Initiative):
+ *   "Ask one of the players to roll a d6 for all of the heroes,
+ *    and then roll a d6 for the monsters.
+ *    The side with the highest roll goes first (heroes win on a tie)."
  *
  * Inputs:
  *   hero: { id, custom_name, hp_max, attack_dice, defense_dice, special_*, ... }
@@ -27,33 +39,41 @@ import { TRIGGER_EVENTS, COMBAT_OUTCOMES } from '../config/constants.js';
  * Output: state object consumed by all engine fns.
  */
 export function initCombat(hero, heroInventory, monsters, room, currentHp = null) {
+  // PDF initiative roll — heroes win ties
+  const heroInitiative    = d6();
+  const monsterInitiative = d6();
+  const firstTurn = heroInitiative >= monsterInitiative ? 'player' : 'monsters';
+  const initiativeMsg = firstTurn === 'player'
+    ? `יוזמה: גיבור [${heroInitiative}] מול מפלצות [${monsterInitiative}] — הגיבור מתחיל!`
+    : `יוזמה: גיבור [${heroInitiative}] מול מפלצות [${monsterInitiative}] — המפלצות מתחילות!`;
+
   const state = {
     hero: {
-      id: hero.id,
-      name: hero.custom_name || hero.name,
-      hp: currentHp ?? hero.hp_max,
-      hp_max: hero.hp_max,
-      attack_dice: hero.attack_dice,
-      defense_dice: hero.defense_dice,
-      special_name: hero.special_name,
+      id:                  hero.id,
+      name:                hero.custom_name || hero.name,
+      hp:                  currentHp ?? hero.hp_max,
+      hp_max:              hero.hp_max,
+      attack_dice:         hero.attack_dice,
+      defense_dice:        hero.defense_dice,
+      special_name:        hero.special_name,
       special_description: hero.special_description,
-      special_trigger: hero.special_trigger,
-      special_used: false,
-      emoji: hero.emoji,
-      statuses: [],
-      combat_bonuses: {}
+      special_trigger:     hero.special_trigger,
+      special_used:        false,
+      emoji:               hero.emoji,
+      statuses:            [],
+      combat_bonuses:      {}
     },
     monsters: monsters.map((m) => ({
       ...m,
       hp_max: m.hp_max ?? m.hp
     })),
     inventory: heroInventory || {},
-    room: { id: room.id, title: room.title },
+    room:      { id: room.id, title: room.title },
     pendingLoot: [],
-    round: 1,
-    turn: 'player', // 'player' | 'monsters'
-    log: [],
-    outcome: COMBAT_OUTCOMES.IN_PROGRESS
+    round:       1,
+    turn:        firstTurn,
+    log:         [{ type: 'initiative', message: initiativeMsg }],
+    outcome:     COMBAT_OUTCOMES.IN_PROGRESS
   };
 
   // Fire on_player_enter triggers
@@ -70,23 +90,22 @@ function appendLog(state, entries) {
  * Get effective attack/defense dice including combat bonuses from items.
  */
 function getEffectiveDice(hero, type) {
-  const base = type === 'attack' ? hero.attack_dice : hero.defense_dice;
+  const base  = type === 'attack' ? hero.attack_dice : hero.defense_dice;
   const bonus = hero.combat_bonuses?.[type] || 0;
   if (!bonus) return base;
 
-  // Apply modifier
   const m = base.match(/^(\d*)d(\d+)([+-]\d+)?$/i);
   if (!m) return base;
-  const head = `${m[1]}d${m[2]}`;
+  const head       = `${m[1]}d${m[2]}`;
   const currentMod = m[3] ? parseInt(m[3], 10) : 0;
-  const newMod = currentMod + bonus;
+  const newMod     = currentMod + bonus;
   if (newMod === 0) return head;
   return `${head}${newMod >= 0 ? '+' : ''}${newMod}`;
 }
 
 /**
  * Player attacks a specific monster.
- * Returns { state, attackResult, log }
+ * Returns { state, attackResult }
  */
 export function playerAttack(state, targetMonsterId) {
   if (state.outcome !== COMBAT_OUTCOMES.IN_PROGRESS) return { state };
@@ -100,7 +119,6 @@ export function playerAttack(state, targetMonsterId) {
     target.defense_dice
   );
 
-  // Apply damage
   let updatedMonsters = state.monsters.map((m) => {
     if (m.id === targetMonsterId) {
       return { ...m, hp: Math.max(0, m.hp - attackResult.hits) };
@@ -114,23 +132,21 @@ export function playerAttack(state, targetMonsterId) {
     log: [
       ...state.log,
       {
-        type: 'player_attack',
-        message: `${state.hero.name} תקף את ${target.name}: ${attackResult.description}`,
-        target_id: targetMonsterId,
-        hits: attackResult.hits,
-        rolls: attackResult.attackRolls,
+        type:          'player_attack',
+        message:       `${state.hero.name} תקף את ${target.name}: ${attackResult.description}`,
+        target_id:     targetMonsterId,
+        hits:          attackResult.hits,
+        rolls:         attackResult.attackRolls,
         defense_rolls: attackResult.defenseRolls
       }
     ]
   };
 
-  // Fire on_hit triggers if we hit
   if (attackResult.hits > 0) {
     const hitResult = resolveTriggers(newState, TRIGGER_EVENTS.ON_HIT, targetMonsterId);
     newState = appendLog(hitResult.state, hitResult.log);
   }
 
-  // Check for monster death
   const killedMonster = newState.monsters.find(
     (m) => m.id === targetMonsterId && m.hp <= 0
   );
@@ -138,10 +154,8 @@ export function playerAttack(state, targetMonsterId) {
     newState = handleMonsterDeath(newState, killedMonster);
   }
 
-  // Check combat end
   newState = checkCombatEnd(newState);
 
-  // If combat still in progress, advance to monsters' turn
   if (newState.outcome === COMBAT_OUTCOMES.IN_PROGRESS) {
     newState = { ...newState, turn: 'monsters' };
   }
@@ -161,11 +175,9 @@ function handleMonsterDeath(state, monster) {
     ]
   };
 
-  // Trigger on_death effects BEFORE removing the monster
   const deathResult = resolveTriggers(newState, TRIGGER_EVENTS.ON_DEATH, monster.id);
   newState = appendLog(deathResult.state, deathResult.log);
 
-  // Roll loot from the monster's loot table
   if (monster.loot?.length) {
     const drops = rollLoot(monster.loot);
     if (drops.length > 0) {
@@ -196,19 +208,16 @@ export function playerUseItem(state, item) {
     };
   }
 
-  const result = inventoryUseItem(item, state);
-  let newState = appendLog(result.state, result.log);
-
-  // Using an item ends the turn
-  newState = { ...newState, turn: 'monsters' };
+  const result  = inventoryUseItem(item, state);
+  let newState  = appendLog(result.state, result.log);
+  newState      = { ...newState, turn: 'monsters' };
 
   return { state: newState };
 }
 
 /**
  * Player uses their special ability.
- * This is intentionally generic — implementations vary by class.
- * The UI passes the chosen target if needed.
+ * Generic for v1 — deals 2 fixed damage to chosen target.
  */
 export function playerUseSpecial(state, params = {}) {
   if (state.outcome !== COMBAT_OUTCOMES.IN_PROGRESS) return { state };
@@ -222,15 +231,14 @@ export function playerUseSpecial(state, params = {}) {
     };
   }
 
-  // For v1: special does +1 damage to chosen target (override with params for variety)
   const targetId = params.target_id || state.monsters.find((m) => m.hp > 0)?.id;
   if (!targetId) return { state };
 
   const target = state.monsters.find((m) => m.id === targetId);
   if (!target) return { state };
 
-  const damage = params.damage || 2;
-  let newState = {
+  const damage  = params.damage || 2;
+  let newState  = {
     ...state,
     hero: { ...state.hero, special_used: true },
     monsters: state.monsters.map((m) =>
@@ -239,8 +247,8 @@ export function playerUseSpecial(state, params = {}) {
     log: [
       ...state.log,
       {
-        type: 'special',
-        message: `${state.hero.name} השתמש ב-${state.hero.special_name}! ${damage} נזק ל-${target.name}`,
+        type:      'special',
+        message:   `${state.hero.name} השתמש ב-${state.hero.special_name}! ${damage} נזק ל-${target.name}`,
         target_id: targetId,
         damage
       }
@@ -261,18 +269,16 @@ export function playerUseSpecial(state, params = {}) {
 
 /**
  * BFS path from `start` toward a cell adjacent to `heroPos`.
- * Returns an array of positions (steps) to take, capped at `moveRange`.
- * Treats walls + other living-monster cells as blocked.
+ * Returns steps to take, capped at `moveRange`.
  */
 function pathTowardHero(start, heroPos, blocked, cols, rows, moveRange) {
   if (!start || !heroPos) return [];
-  const queue = [{ x: start.x, y: start.y, path: [] }];
+  const queue   = [{ x: start.x, y: start.y, path: [] }];
   const visited = new Set([`${start.x},${start.y}`]);
 
   while (queue.length) {
     const { x, y, path } = queue.shift();
 
-    // Adjacent to hero — we can stop here
     if (Math.max(Math.abs(x - heroPos.x), Math.abs(y - heroPos.y)) <= 1 && path.length > 0) {
       return path.slice(0, moveRange);
     }
@@ -281,7 +287,6 @@ function pathTowardHero(start, heroPos, blocked, cols, rows, moveRange) {
     for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
       const nx = x + dx, ny = y + dy;
       if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
-      // Never step onto the hero's cell — only adjacent
       if (nx === heroPos.x && ny === heroPos.y) continue;
       const key = `${nx},${ny}`;
       if (blocked.has(key) || visited.has(key)) continue;
@@ -293,8 +298,8 @@ function pathTowardHero(start, heroPos, blocked, cols, rows, moveRange) {
 }
 
 /**
- * All living monsters take their turn.
- * Optionally accepts `grid` + `heroPosition` to enable positional movement.
+ * All living monsters move then attack.
+ * Optionally accepts `grid` + `heroPosition` for positional movement.
  */
 export function monstersTurn(state, grid = null, heroPosition = null) {
   if (state.outcome !== COMBAT_OUTCOMES.IN_PROGRESS) return { state };
@@ -320,12 +325,10 @@ export function monstersTurn(state, grid = null, heroPosition = null) {
           Math.abs(heroPosition.x - m.position.x),
           Math.abs(heroPosition.y - m.position.y)
         ) <= 1;
-      if (alreadyAdjacent) continue; // no need to move
+      if (alreadyAdjacent) continue;
 
       const moveRange = m.move_range || 2;
-
-      // blocked = walls + positions of other living monsters
-      const blocked = new Set(walls);
+      const blocked   = new Set(walls);
       movedMonsters.forEach((other, j) => {
         if (j !== i && other.hp > 0 && other.position)
           blocked.add(`${other.position.x},${other.position.y}`);
@@ -351,7 +354,6 @@ export function monstersTurn(state, grid = null, heroPosition = null) {
     if (monster.hp <= 0) continue;
     if (newState.hero.hp <= 0) break;
 
-    // Skip attack if grid-mode is on and monster is not adjacent
     if (grid && heroPosition && monster.position) {
       const dist = Math.max(
         Math.abs(heroPosition.x - monster.position.x),
@@ -374,11 +376,11 @@ export function monstersTurn(state, grid = null, heroPosition = null) {
       log: [
         ...newState.log,
         {
-          type: 'monster_attack',
-          message: `${monster.name} תקף: ${attackResult.description}`,
+          type:      'monster_attack',
+          message:   `${monster.name} תקף: ${attackResult.description}`,
           source_id: monster.id,
-          hits: attackResult.hits,
-          rolls: attackResult.attackRolls
+          hits:      attackResult.hits,
+          rolls:     attackResult.attackRolls
         }
       ]
     };
@@ -399,33 +401,27 @@ export function advanceTurn(state) {
   let newState = {
     ...state,
     round: state.round + 1,
-    turn: 'player'
+    turn:  'player'
   };
 
-  // Tick statuses + combat bonuses
   newState = tickStatuses(newState);
   newState = tickCombatBonuses(newState);
 
-  // Resolve status round-start effects (poison damage, etc.)
   const statusResult = resolveStatusRoundStart(newState);
   newState = appendLog(statusResult.state, statusResult.log);
 
-  // Resolve room-level on_round_start triggers
   const roundResult = resolveTriggers(newState, TRIGGER_EVENTS.ON_ROUND_START);
   newState = appendLog(roundResult.state, roundResult.log);
 
-  // If hero is stunned/frozen, skip their turn
   if (isHeroSkippingTurn(newState)) {
     newState = {
       ...newState,
-      log: [...newState.log, { type: 'skip', message: 'הגיבור מאבד תור!' }],
+      log:  [...newState.log, { type: 'skip', message: 'הגיבור מאבד תור!' }],
       turn: 'monsters'
     };
   }
 
-  // Check combat end after triggers (poison could kill hero)
   newState = checkCombatEnd(newState);
-
   return newState;
 }
 
@@ -463,13 +459,13 @@ export function isCombatOver(state) {
 }
 
 /**
- * Returns the outcome details + pending loot.
+ * Returns outcome details + pending loot.
  */
 export function getCombatResult(state) {
   return {
-    outcome: state.outcome,
-    pendingLoot: state.pendingLoot || [],
-    finalHp: state.hero.hp,
+    outcome:          state.outcome,
+    pendingLoot:      state.pendingLoot || [],
+    finalHp:          state.hero.hp,
     monstersDefeated: state.monsters.filter((m) => m.hp <= 0).length
   };
 }
@@ -480,7 +476,7 @@ export function getCombatResult(state) {
 export function finalizeLoot(state) {
   const newInventory = collectLoot(state.pendingLoot || [], state.inventory || {});
   return {
-    state: { ...state, inventory: newInventory, pendingLoot: [] },
+    state:     { ...state, inventory: newInventory, pendingLoot: [] },
     inventory: newInventory
   };
 }
