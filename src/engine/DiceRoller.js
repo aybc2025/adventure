@@ -1,6 +1,7 @@
-// Hero Kids dice system: highest attack die vs highest defense die.
-// Each attack die that beats the highest defense die = 1 hit.
-// (Standard Hero Kids rules per Justin Halliday v3.1)
+// Hero Kids dice system — per Justin Halliday v3.1 PDF rules (p.10):
+// "If the attacker's highest die EQUALS OR EXCEEDS the defender's highest die
+//  then the attack hits." → binary result: 0 or 1 hit.
+// All hits deal exactly 1 damage (PDF p.15: "attacks deal 1 damage when they hit").
 
 /**
  * Parse a dice expression like "2d6", "1d6+1", "d6".
@@ -46,40 +47,46 @@ export function roll(expression) {
 
 /**
  * Resolve a Hero Kids attack.
- * Hits = number of attack dice that beat the highest defense die.
+ *
+ * PDF rule (p.10): compare the HIGHEST attack die against the HIGHEST defense die.
+ * If highestAttack >= highestDefense → 1 hit (1 damage).
+ * Otherwise → 0 hits (miss).
+ *
+ * Multiple attack dice give a better CHANCE of rolling high,
+ * but a single attack always deals exactly 0 or 1 damage.
  *
  * Returns:
  * {
  *   attackRolls: [...],
  *   defenseRolls: [...],
  *   attackModifier, defenseModifier,
- *   highestDefense, hits,
- *   description: human-readable summary in Hebrew
+ *   highestAttack, highestDefense,
+ *   hits,          // always 0 or 1
+ *   description:   // Hebrew summary
  * }
  */
 export function rollAttack(attackDice, defenseDice) {
   const atk = parseDice(attackDice);
   const def = parseDice(defenseDice);
 
-  const attackRolls = rollDice(atk.count, atk.sides);
+  const attackRolls  = rollDice(atk.count, atk.sides);
   const defenseRolls = rollDice(def.count, def.sides);
 
+  // Apply modifiers to the highest die in each pool
+  const highestAttack  = Math.max(...attackRolls)  + atk.modifier;
   const highestDefense = Math.max(...defenseRolls) + def.modifier;
 
-  let hits = 0;
-  for (const a of attackRolls) {
-    if (a + atk.modifier > highestDefense) hits++;
-  }
+  // PDF rule: >= (equals OR exceeds)
+  const hits = highestAttack >= highestDefense ? 1 : 0;
 
   return {
     attackRolls,
     defenseRolls,
-    attackModifier: atk.modifier,
+    attackModifier:  atk.modifier,
     defenseModifier: def.modifier,
+    highestAttack,
     highestDefense,
     hits,
-    description: hits === 0
-      ? 'החמצה!'
-      : `${hits} ${hits === 1 ? 'פגיעה' : 'פגיעות'}!`
+    description: hits === 0 ? 'החמצה!' : 'פגיעה!'
   };
 }
