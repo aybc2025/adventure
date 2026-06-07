@@ -132,12 +132,16 @@ export function playerAttack(state, targetMonsterId) {
     log: [
       ...state.log,
       {
-        type:          'player_attack',
-        message:       `${state.hero.name} תקף את ${target.name}: ${attackResult.description}`,
-        target_id:     targetMonsterId,
-        hits:          attackResult.hits,
-        rolls:         attackResult.attackRolls,
-        defense_rolls: attackResult.defenseRolls
+        type:           'player_attack',
+        message:        `${state.hero.name} תקף את ${target.name}`,
+        target_id:      targetMonsterId,
+        hits:           attackResult.hits,
+        rolls:          attackResult.attackRolls,
+        defense_rolls:  attackResult.defenseRolls,
+        highestAttack:  attackResult.highestAttack,
+        highestDefense: attackResult.highestDefense,
+        attackModifier: attackResult.attackModifier,
+        defenseModifier:attackResult.defenseModifier
       }
     ]
   };
@@ -376,11 +380,16 @@ export function monstersTurn(state, grid = null, heroPosition = null) {
       log: [
         ...newState.log,
         {
-          type:      'monster_attack',
-          message:   `${monster.name} תקף: ${attackResult.description}`,
-          source_id: monster.id,
-          hits:      attackResult.hits,
-          rolls:     attackResult.attackRolls
+          type:           'monster_attack',
+          message:        `${monster.name} תקף אותך`,
+          source_id:      monster.id,
+          hits:           attackResult.hits,
+          rolls:          attackResult.attackRolls,
+          defense_rolls:  attackResult.defenseRolls,
+          highestAttack:  attackResult.highestAttack,
+          highestDefense: attackResult.highestDefense,
+          attackModifier: attackResult.attackModifier,
+          defenseModifier:attackResult.defenseModifier
         }
       ]
     };
