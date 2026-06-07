@@ -52,25 +52,36 @@ export function usePlayerHero() {
     return unsub;
   }, [user]);
 
+  /**
+   * Create a new hero from a template.
+   *
+   * We copy starting_items from the template so AdventureSelect can
+   * read hero.starting_items without an extra Firestore query.
+   *
+   * PDF rule (p.16): heroes start each adventure with the potions
+   * shown on their hero card. The starting_items field encodes that.
+   */
   async function createHero(template, customName) {
     if (!user) throw new Error('Not authenticated');
     const heroData = {
-      template_id: template.id,
-      custom_name: customName,
-      class: template.class || template.name,
-      hp_max: template.hp_max,
-      attack_dice: template.attack_dice,
-      defense_dice: template.defense_dice,
-      special_name: template.special_name,
-      special_description: template.special_description,
-      special_trigger: template.special_trigger,
-      emoji: template.emoji,
-      level: 1,
-      xp: 0,
-      xp_to_next_level: 10,
-      applied_upgrades: [],
-      created_at: serverTimestamp(),
-      last_played: serverTimestamp()
+      template_id:          template.id,
+      custom_name:          customName,
+      class:                template.class || template.name,
+      hp_max:               template.hp_max,
+      attack_dice:          template.attack_dice,
+      defense_dice:         template.defense_dice,
+      special_name:         template.special_name,
+      special_description:  template.special_description,
+      special_trigger:      template.special_trigger,
+      emoji:                template.emoji,
+      level:                1,
+      xp:                   0,
+      xp_to_next_level:     10,
+      applied_upgrades:     [],
+      // PDF rule: copy the starting kit so sessions can use it
+      starting_items:       template.starting_items || [],
+      created_at:           serverTimestamp(),
+      last_played:          serverTimestamp()
     };
     const heroRef = await addDoc(
       collection(db, 'players', user.uid, 'heroes'),
