@@ -183,6 +183,7 @@ export default function RoomView() {
         for (const [k, v] of Object.entries(newInv)) {
           newInventorySnapshot[k] = { item_id: v.item_id, quantity: v.quantity };
         }
+        const hpAfterRest = Math.min(finalState.hero.hp + 1, hero.hp_max);
         await updateSession({
           current_room_id: nextRoomId,
           completed_rooms: updatedCompletedRooms,
